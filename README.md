@@ -1,4 +1,5 @@
 # TP TDL Unbutú
 ----
 
-Para correr el tp: `go run ./tp-tdl-unbutu`
+Para correr el tp: `go run ./tp-tdl-unbutu`. Rutas: 
+- `/albums`
