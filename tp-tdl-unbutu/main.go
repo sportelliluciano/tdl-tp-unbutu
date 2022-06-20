@@ -47,33 +47,4 @@ func main() {
 	go router.Run("localhost:8080")
 	manager.Run()
 	// W1(J1), W2(J2), BACKLOG(channel size=1)=J3; J4 falla porque size = 1 y lleno
-	// var currentJob *job
-	// for {
-	// 	req := <-channel
-	// 	if req.Code == Spawn {
-	// 		if currentJob == nil {
-	// 			currentJob = spawn()
-	// 			channel <- request{Code: Ok, Result: "job started"}
-	// 		} else {
-	// 			channel <- request{Code: Error, Result: "job is already running"}
-	// 		}
-	// 	} else if req.Code == Progress {
-	// 		if currentJob != nil {
-	// 			channel <- request{Code: Ok, Result: "running: " + currentJob.currentProgress + "%"}
-	// 		} else {
-	// 			channel <- request{Code: Ok, Result: "not running"}
-	// 		}
-	// 	} else if req.Code == Output {
-	// 		if currentJob != nil {
-	// 			if currentJob.output != nil {
-	// 				channel <- request{Code: Ok, Result: *currentJob.output}
-	// 				currentJob = nil
-	// 			} else {
-	// 				channel <- request{Code: Error, Result: "job still running"}
-	// 			}
-	// 		} else {
-	// 			channel <- request{Code: Error, Result: "job is not running"}
-	// 		}
-	// 	}
-	// }
 }
