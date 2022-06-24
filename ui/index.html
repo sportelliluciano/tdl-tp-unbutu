@@ -62,10 +62,10 @@
             for (const jobId of runningJobs) {
                 const status = await fetch(`/api/date/${jobId}/status`).then((req) => req.json());
                 const output = await fetch(`/api/date/${jobId}/output`).then((req) => req.json());
-                document.getElementById(`job-${jobId}`).childNodes[1].textContent = status;
+                document.getElementById(`job-${jobId}`).childNodes[1].textContent = `${status.status}: ${status.progress}`;
                 document.getElementById(`job-${jobId}`).childNodes[2].textContent = output;
 
-                if (status == "job_finished") {
+                if (status.status == "job_finished") {
                     completedJobs.push(jobId);
                 }
             }

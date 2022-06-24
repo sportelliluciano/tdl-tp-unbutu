@@ -1,0 +1,51 @@
+package models
+
+type JobId string
+type JobStatus string
+type JobProgress string
+type JobOutput string
+
+type JobError string
+
+const (
+	NoError              = "no_error"
+	JobNotFound          = "job_not_found"
+	JobNotFinished       = "job_not_finished"
+	JobFinished          = "job_finished"
+	JobMetadataCorrupted = "job_metadata_corrupted"
+	DatabaseError        = "database_error"
+)
+
+const (
+	StatusQueued   = "queued"
+	StatusRunning  = "running"
+	StatusFinished = "finished"
+	StatusFailed   = "failed"
+)
+
+type NewJob struct {
+	JobId JobId
+}
+
+type JobResult struct {
+	JobId  JobId
+	Output string
+}
+
+type JobProgressReport struct {
+	JobId    JobId
+	Progress string
+}
+
+type Job struct {
+	JobId    JobId       `bson:"jobId"`
+	Progress JobProgress `bson:"progress"`
+	Status   JobStatus   `bson:"status"`
+	Output   JobOutput   `bson:"output"`
+}
+
+func (j *Job) HasFinished() bool {
+	return j.Status == StatusFinished
+}
+
+type NewJobRequest struct{}

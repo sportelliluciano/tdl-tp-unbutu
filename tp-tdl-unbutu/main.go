@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"tp-tdl-unbutu/tp-tdl-unbutu/controllers"
+	"tp-tdl-unbutu/tp-tdl-unbutu/repositories"
 	"tp-tdl-unbutu/tp-tdl-unbutu/services"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,8 @@ func main() {
 	log.Println("FUNCA")
 	router := gin.Default()
 
-	manager := services.NewJobManager(coll)
+	jobsRepository := repositories.NewJobRepository(coll)
+	manager := services.NewJobManager(&jobsRepository)
 	controller := controllers.NewJobController(manager)
 	controller.RegisterRoutes(router, "/api")
 	router.Static("/ui", "./ui")
