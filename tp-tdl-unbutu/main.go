@@ -3,15 +3,14 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
+	"tp-tdl-unbutu/tp-tdl-unbutu/controllers"
+	"tp-tdl-unbutu/tp-tdl-unbutu/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"strconv"
 )
 
 // API REST EN GO: https://go.dev/doc/tutorial/web-service-gin
@@ -39,37 +38,10 @@ func main() {
 	coll := client.Database("TpTdl").Collection("jobs")
 	log.Println("FUNCA")
 	router := gin.Default()
-	manager := NewJobManager(coll)
-	router.GET("/date", func(c *gin.Context) {
-		jobId := manager.CreateJob(NewJobRequest{})
-		c.IndentedJSON(http.StatusOK, jobId)
-	})
-	router.GET("/date/:jobId/status", func(c *gin.Context) {
-		jobId, err := strconv.ParseInt(c.Param("jobId"), 10, 64)
-		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err)
-		} else {
-			jobStatus, err := manager.GetJobStatus(JobId(jobId))
-			if err != NoError {
-				c.IndentedJSON(http.StatusBadRequest, err)
-			} else {
-				c.IndentedJSON(http.StatusOK, jobStatus)
-			}
-		}
-	})
-	router.GET("/date/:jobId/output", func(c *gin.Context) {
-		jobId, err := strconv.ParseInt(c.Param("jobId"), 10, 64)
-		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, err)
-		} else {
-			jobStatus, err := manager.GetJobOutput(JobId(jobId))
-			if err != NoError {
-				c.IndentedJSON(http.StatusBadRequest, err)
-			} else {
-				c.IndentedJSON(http.StatusOK, jobStatus)
-			}
-		}
-	})
+
+	manager := services.NewJobManager(coll)
+	controller := controllers.NewJobController(manager)
+	controller.RegisterRoutes(router, "/api")
 	router.Static("/ui", "./ui")
 
 	go router.Run("localhost:8080")

@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"context"
@@ -60,7 +60,7 @@ func (jm *JobManager) spawnJob(newJob Job) {
 	if err != nil {
 		panic(err)
 	}
-	spawn(newJob.job_id, jm.output_channel, jm.progress_channel)
+	spawn(NewJob{JobId: newJob.job_id}, jm.output_channel, jm.progress_channel)
 }
 
 func (jm *JobManager) GetJobStatus(jobId JobId) (string, JobError) {

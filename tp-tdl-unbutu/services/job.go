@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"io"
@@ -7,6 +7,10 @@ import (
 
 	"strings"
 )
+
+type NewJob struct {
+	JobId JobId
+}
 
 type JobResult struct {
 	JobId  JobId
@@ -18,15 +22,15 @@ type JobProgress struct {
 	Progress string
 }
 
-func spawn(new_job_id JobId, output_channel chan JobResult, progress_channel chan JobProgress) {
+func spawn(newJob NewJob, output_channel chan JobResult, progress_channel chan JobProgress) {
 	dateCmd := exec.Command("bash", "./date-with-sleep.sh")
 	pipeReader, err := dateCmd.StderrPipe()
 	if err != nil {
 		panic(err)
 	}
 
-	go reportJobProgress(pipeReader, progress_channel, new_job_id)
-	go waitForJobOutput(dateCmd, output_channel, new_job_id)
+	go reportJobProgress(pipeReader, progress_channel, newJob.JobId)
+	go waitForJobOutput(dateCmd, output_channel, newJob.JobId)
 }
 
 func reportJobProgress(pipeReader io.ReadCloser, progress_channel chan JobProgress, job_id JobId) {
