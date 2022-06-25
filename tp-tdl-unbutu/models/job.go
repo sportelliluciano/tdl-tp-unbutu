@@ -38,10 +38,10 @@ type JobProgressReport struct {
 }
 
 type Job struct {
-	JobId    JobId       `bson:"jobId"`
-	Progress JobProgress `bson:"progress"`
-	Status   JobStatus   `bson:"status"`
-	Output   JobOutput   `bson:"output"`
+	JobId    JobId       `bson:"jobId" json:"jobId"`
+	Progress JobProgress `bson:"progress" json:"progress"`
+	Status   JobStatus   `bson:"status" json:"status"`
+	Output   JobOutput   `bson:"output" json:"output"`
 }
 
 func (j *Job) HasFinished() bool {

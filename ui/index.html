@@ -24,7 +24,7 @@
         }
 
         #jobs-table {
-            width: 80%;
+            width: 80vw;
             margin: 40px;
         }
     </style>
@@ -36,9 +36,9 @@
     <table id="jobs-table">
         <thead>
             <tr>
-                <td style="width: 10%">Job ID</td>
-                <td style="width: 20%">Job Status</td>
-                <td style="width: 70%">Job Output</td>
+                <td style="width: 30%">Job ID</td>
+                <td style="width: 30%">Job Status</td>
+                <td style="width: 40%">Job Output</td>
             </tr>
         </thead>
         <tbody id="jobs">
@@ -49,7 +49,9 @@
     <script>
         let runningJobs = [];
         const createJob = async () => {
-            const ret = await fetch("/api/date").then((req) => req.json());
+            const ret = await fetch("/api/job", {
+                method: "POST"
+            }).then((req) => req.json());
             elem = document.createElement('tr');
             elem.id = `job-${ret}`;
             elem.innerHTML = `<td class="job-id">${ret}</td><td>started</td><td></td>`;
@@ -60,12 +62,11 @@
         setInterval(async () => {
             const completedJobs = [];
             for (const jobId of runningJobs) {
-                const status = await fetch(`/api/date/${jobId}/status`).then((req) => req.json());
-                const output = await fetch(`/api/date/${jobId}/output`).then((req) => req.json());
-                document.getElementById(`job-${jobId}`).childNodes[1].textContent = `${status.status}: ${status.progress}`;
-                document.getElementById(`job-${jobId}`).childNodes[2].textContent = output;
+                const job = await fetch(`/api/job/${jobId}`).then((req) => req.json());
+                document.getElementById(`job-${jobId}`).childNodes[1].textContent = `${job.status}: ${job.progress}`;
+                document.getElementById(`job-${jobId}`).childNodes[2].textContent = job.output;
 
-                if (status.status == "job_finished") {
+                if (job.status == "finished") {
                     completedJobs.push(jobId);
                 }
             }

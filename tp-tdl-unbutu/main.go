@@ -1,52 +1,33 @@
 package main
 
 import (
-	"context"
-	"log"
-	"os"
 	"tp-tdl-unbutu/tp-tdl-unbutu/controllers"
 	"tp-tdl-unbutu/tp-tdl-unbutu/repositories"
 	"tp-tdl-unbutu/tp-tdl-unbutu/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// API REST EN GO: https://go.dev/doc/tutorial/web-service-gin
 func main() {
+	config := LoadConfigFromEnv()
 
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
+	db := ConnectToMongoDb(config.MongoDbUri)
+	defer db.Disconnect()
 
-	var uri string
-	if uri = os.Getenv("MONGODB_URI"); uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
-
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-
-	coll := client.Database("TpTdl").Collection("jobs")
-	log.Println("FUNCA")
 	router := gin.Default()
 
-	jobsRepository := repositories.NewJobRepository(coll)
+	// Start repositories, services & controllers
+	jobsRepository := repositories.NewJobRepository(db.Db.Collection("jobs"))
 	manager := services.NewJobManager(&jobsRepository)
 	controller := controllers.NewJobController(manager)
+
+	// Register routes
 	controller.RegisterRoutes(router, "/api")
 	router.Static("/ui", "./ui")
 
-	go router.Run("localhost:8080")
+	// Start http server in go routine
+	go router.Run(config.Host + ":" + config.Port)
+
+	// Start job manager in main thread
 	manager.Run()
-	// W1(J1), W2(J2), BACKLOG(channel size=1)=J3; J4 falla porque size = 1 y lleno
 }

@@ -13,6 +13,7 @@ type JobManager struct {
 }
 
 func NewJobManager(jobsRepository *repositories.JobRepository) *JobManager {
+	// W1(J1), W2(J2), BACKLOG(channel size=1)=J3; J4 falla porque size = 1 y lleno
 	return &JobManager{
 		output_channel:   make(chan models.JobResult),
 		input_channel:    make(chan models.Job),
