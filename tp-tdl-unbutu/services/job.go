@@ -17,7 +17,7 @@ func spawn(newJob models.NewJob, output_channel chan models.JobResult, progress_
 	}
 
 	go reportJobProgress(pipeReader, progress_channel, newJob.JobId)
-	go waitForJobOutput(dateCmd, output_channel, newJob.JobId)
+	waitForJobOutput(dateCmd, output_channel, newJob.JobId)
 }
 
 func reportJobProgress(pipeReader io.ReadCloser, progress_channel chan models.JobProgressReport, job_id models.JobId) {

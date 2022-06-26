@@ -17,8 +17,12 @@ func NewJobController(manager *services.JobManager) JobController {
 }
 
 func (jc *JobController) CreateJob(c *gin.Context) {
-	jobId := jc.manager.CreateJob(models.NewJobRequest{})
-	c.IndentedJSON(http.StatusOK, jobId)
+	jobId, err := jc.manager.CreateJob(models.NewJobRequest{})
+	if err != models.NoError {
+		c.IndentedJSON(http.StatusTooManyRequests, jobId)
+	} else {
+		c.IndentedJSON(http.StatusOK, jobId)
+	}
 }
 
 func (jc *JobController) GetJob(c *gin.Context) {

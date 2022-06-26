@@ -14,6 +14,7 @@ const (
 	JobFinished          = "job_finished"
 	JobMetadataCorrupted = "job_metadata_corrupted"
 	DatabaseError        = "database_error"
+	QueueFull            = "queue_full"
 )
 
 const (
