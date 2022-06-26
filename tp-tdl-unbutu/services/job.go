@@ -11,7 +11,7 @@ import (
 
 func spawn(newJob models.NewJob, output_channel chan models.JobResult, progress_channel chan models.JobProgressReport) {
 	dateCmd := exec.Command("bash", "./date-with-sleep.sh")
-	pipeReader, err := dateCmd.StderrPipe()
+	pipeReader, err := dateCmd.StdoutPipe()
 	if err != nil {
 		panic(err)
 	}
@@ -22,22 +22,29 @@ func spawn(newJob models.NewJob, output_channel chan models.JobResult, progress_
 
 func reportJobProgress(pipeReader io.ReadCloser, progress_channel chan models.JobProgressReport, job_id models.JobId) {
 	for {
-		var buffer = make([]byte, 100)
+		var buffer = make([]byte, 8192)
 		n, err := pipeReader.Read(buffer)
 		if n == 0 || err != nil {
 			break
 		}
-
-		currentProgress := strings.Trim(string(buffer[0:n]), "\n")
+		lines := strings.Split(string(buffer[0:n]), "\n")
+		currentProgress := make(map[string]interface{})
+		for _, line := range lines {
+			values := strings.Split(line, "=")
+			if len(values) == 2 {
+				currentProgress[values[0]] = values[1]
+			}
+		}
 		progress_channel <- models.JobProgressReport{JobId: job_id, Progress: currentProgress}
 	}
 }
 
 func waitForJobOutput(cmd *exec.Cmd, output_channel chan models.JobResult, job_id models.JobId) {
-	dateOut, err := cmd.Output()
+	cmd.Start()
+	err := cmd.Wait()
+	output := "Success"
 	if err != nil {
-		panic(err)
+		output = "Error"
 	}
-	output := strings.Trim(string(dateOut), "\n")
 	output_channel <- models.JobResult{JobId: job_id, Output: output}
 }

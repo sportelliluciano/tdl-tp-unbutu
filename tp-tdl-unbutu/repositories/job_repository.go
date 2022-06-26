@@ -26,7 +26,7 @@ func (jr *JobRepository) CreateJob(newJob models.NewJob) (*models.Job, models.Jo
 	}
 	return &models.Job{
 		JobId:    models.JobId(newId),
-		Progress: models.JobProgress(""),
+		Progress: models.JobProgress(make(map[string]interface{})),
 		Status:   models.StatusQueued,
 		Output:   models.JobOutput(""),
 	}, models.NoError
@@ -76,7 +76,7 @@ func (jr *JobRepository) SaveJobOutput(jobId models.JobId, output models.JobOutp
 func serializeNewJobToBson(newId string, newJob models.NewJob) bson.D {
 	return bson.D{
 		{Key: "jobId", Value: newId},
-		{Key: "progress", Value: ""},
+		{Key: "progress", Value: make(map[string]string)},
 		{Key: "status", Value: models.StatusQueued},
 		{Key: "output", Value: ""},
 	}
@@ -84,7 +84,7 @@ func serializeNewJobToBson(newId string, newJob models.NewJob) bson.D {
 
 func deserializeJobFromBson(job bson.M) (*models.Job, bool) {
 	jobId, ok_0 := job["jobId"].(string)
-	progress, ok_1 := job["progress"].(string)
+	progress, ok_1 := job["progress"].(bson.M)
 	status, ok_2 := job["status"].(string)
 	output, ok_3 := job["output"].(string)
 

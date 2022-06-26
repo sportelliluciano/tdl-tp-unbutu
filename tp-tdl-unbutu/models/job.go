@@ -2,7 +2,7 @@ package models
 
 type JobId string
 type JobStatus string
-type JobProgress string
+type JobProgress map[string]interface{}
 type JobOutput string
 
 type JobError string
@@ -35,7 +35,7 @@ type JobResult struct {
 
 type JobProgressReport struct {
 	JobId    JobId
-	Progress string
+	Progress map[string]interface{}
 }
 
 type Job struct {
