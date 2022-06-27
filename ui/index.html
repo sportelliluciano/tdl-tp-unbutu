@@ -203,7 +203,7 @@
                 $row.childNodes[0].textContent = '❌';
             } else if (status === "finished") {
                 $row.childNodes[0].textContent = '✅';
-                $row.childNodes[3].innerHTML = `<a href="/job/${jobId}/file">Download result</a>`;
+                $row.childNodes[3].innerHTML = `<a href="/api/job/${jobId}/file">Download result</a>`;
             }
             $row.childNodes[2].textContent = `${progress}`;
         }
