@@ -53,17 +53,17 @@ func (jc *JobController) CreateJob(c *gin.Context) {
 		file, err := c.FormFile("file")
 		if err == nil {
 			src, err := file.Open()
-			if err != nil {
+			if err == nil {
 				defer src.Close()
 
 				// Destination
 				dst, err := os.Create("./input/" + newId + ".txt")
-				if err != nil {
+				if err == nil {
 					defer dst.Close()
 
 					// Copy
 					io.Copy(dst, src)
-					c.IndentedJSON(http.StatusOK, "Upload successful ")
+					c.IndentedJSON(http.StatusCreated, jobId)
 				} else {
 					c.IndentedJSON(http.StatusBadRequest, err)
 				}
@@ -75,7 +75,7 @@ func (jc *JobController) CreateJob(c *gin.Context) {
 		} else {
 			c.IndentedJSON(http.StatusBadRequest, err)
 		}
-		c.IndentedJSON(http.StatusCreated, jobId)
+
 	}
 }
 
