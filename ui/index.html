@@ -8,12 +8,23 @@
     <title>Job Control Test</title>
     <style>
         body {
+            background-color: #457b9d;
             font-family: sans-serif;
             display: flex;
             align-items: center;
             flex-direction: column;
             max-width: 960px;
             margin: auto;
+        }
+
+        .content {
+            color: #222;
+            text-align: center;
+            min-height: 100vh;
+            max-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         #create-job {
@@ -24,47 +35,178 @@
         }
 
         #jobs-table {
+            text-align: left;
             width: 80vw;
-            margin: 40px;
+            margin: 25px 40px;
+            margin-bottom: auto;
+        }
+
+        .new-job {
+            font-size: 20px;
+            display: flex;
+            justify-content: space-around;
+            width: 80vw;
+            align-items: center;
+        }
+
+        .new-job .select-control select {
+            font-size: 20px;
+        }
+
+        .new-job .file-control {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .new-job .file-control input {
+            padding: 0 20px 0 20px;
+        }
+
+        hr {
+            margin: 10px 35px;
+            border-color: #22222266;
+        }
+
+        hr.muted {
+            border-color: #22222238;
+            margin: 35px 35% 5px;
+        }
+
+        .job-status-column {
+            width: 30px;
+            font-size: 24px;
+        }
+
+        .job-id-column {
+            width: 30%;
+        }
+
+        .job-progress-column {
+            max-width: 30%;
+        }
+
+        .job-output-column {
+            width: auto;
         }
     </style>
 </head>
 
 <body>
-    <h1>Job control</h1>
-    <button id="create-job" onclick="createJob()">Create job</button>
-    <table id="jobs-table">
-        <thead>
-            <tr>
-                <td style="width: 30%">Job ID</td>
-                <td style="width: 30%">Job Status</td>
-                <td style="width: 40%">Job Output</td>
-            </tr>
-        </thead>
-        <tbody id="jobs">
+    <div class="content">
+        <h1>I ❤️ FFMPEG</h1>
+        <hr />
+        <div class="new-job">
+            <div class="file-control">
+                File to convert: <input id="file-input" type="file" accept="audio/*,video/*" />
+            </div>
+            <div class="select-control">
+                Output format:
+                <select id="format-selector">
+                    <option disabled> - Audio formats - </option>
+                    <option value="mp3">MP3</option>
+                    <option value="aac">AAC</option>
+                    <option disabled> - Video formats - </option>
+                    <option value="mp4" selected>MP4</option>
+                    <option value="mkv">MKV</option>
+                    <option value="mov">MOV</option>
+                    <option value="mpeg">MPEG</option>
+                </select>
+            </div>
+            <button id="create-job" onclick="createJob()">Convert file</button>
+        </div>
+        <hr />
+        <table id="jobs-table">
+            <thead>
+                <tr>
+                    <td class="job-status-column"></td>
+                    <td class="job-id-column">Job ID</td>
+                    <td class="job-progress-column">Progress</td>
+                    <td class="job-output-column">Output</td>
+                </tr>
+            </thead>
+            <tbody id="jobs">
 
-        </tbody>
-    </table>
-    <p>Last refreshed: <span id="last-refreshed">never</span></p>
+            </tbody>
+        </table>
+        <hr class="muted" />
+        <p>Last refreshed: <span id="last-refreshed">never</span></p>
+    </div>
     <script>
+        const $btn = document.querySelector('#create-job');
+        const $jobsTable = document.querySelector('#jobs');
+        const $formatSelector = document.querySelector('#format-selector');
+
+        const setConvertBtnEnabled = (enabled) => {
+            if (enabled) {
+                $btn.removeAttribute('disabled');
+            } else {
+                $btn.setAttribute('enabled', true);
+            }
+        };
+
+        const addJobRow = (jobId) => {
+            elem = document.createElement('tr');
+            elem.id = `job-${jobId}`;
+            const downloadButton = '<td><a href="/job/${jobId}/file" disabled title="Job not finished yet">Download result</a></td>';
+            elem.innerHTML = `<td class="job-status-column">⌛</td><td class="job-id">${jobId}</td><td></td>` + downloadButton;
+            $jobsTable.appendChild(elem);
+        }
+
+        const updateJobRow = (jobId, status, progress, output) => {
+            const $row = document.getElementById(`job-${jobId}`);
+
+            if (status === "queued") {
+                $row.childNodes[0].textContent = '⌛';
+            } else if (status === "running") {
+                $row.childNodes[0].textContent = '🏃‍♂️';
+            } else if (status === "failed") {
+                $row.childNodes[0].textContent = '❌';
+            } else if (status === "finished") {
+                $row.childNodes[0].textContent = '✅';
+            }
+            $row.childNodes[2].textContent = `${progress}`;
+            $row.childNodes[3].textContent = output;
+        }
+
         let runningJobs = [];
         const createJob = async () => {
-            const ret = await fetch("/api/job", {
-                method: "POST"
-            }).then((req) => req.json());
-            elem = document.createElement('tr');
-            elem.id = `job-${ret}`;
-            elem.innerHTML = `<td class="job-id">${ret}</td><td>started</td><td></td>`;
-            document.querySelector('#jobs').appendChild(elem);
-            runningJobs.push(ret);
+            let formData = new FormData();
+            //formData.append("file", fileupload.files[0]);
+            setConvertBtnEnabled(true);
+            try {
+                const ret = await fetch(`/api/job?outputFormat=${$formatSelector.value}`, {
+                    method: "POST",
+                    body: formData
+                }).then((req) => {
+                    if (req.status != 201) {
+                        throw new Error("Too many jobs are already running!");
+                    }
+
+                    return req.json();
+                });
+                addJobRow(ret);
+                runningJobs.push(ret);
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                setConvertBtnEnabled(false);
+            }
         }
+
+        const formatProgress = (progress) => {
+            let ret = "";
+            ret += (progress.out_time) ? "Converted Time: " + progress.out_time.slice(0, progress.out_time.indexOf('.')).trim() + " | " : "";
+            ret += (progress.speed) ? "Speed: " + progress.speed.trim() + " | " : "";
+            ret += (progress.total_size) ? "Output size: " + Math.round(progress.total_size / 1024) + "KB" : "";
+            return ret.endsWith(' | ') ? ret.slice(0, -3) : ret;
+        };
 
         setInterval(async () => {
             const completedJobs = [];
             for (const jobId of runningJobs) {
                 const job = await fetch(`/api/job/${jobId}`).then((req) => req.json());
-                document.getElementById(`job-${jobId}`).childNodes[1].textContent = `${job.status}: ${job.progress}`;
-                document.getElementById(`job-${jobId}`).childNodes[2].textContent = job.output;
+                console.log(job);
+                updateJobRow(jobId, job.status, formatProgress(job.progress), job.output);
 
                 if (job.status == "finished") {
                     completedJobs.push(jobId);
@@ -72,7 +214,7 @@
             }
 
             runningJobs = runningJobs.filter((e) => completedJobs.indexOf(e) === -1)
-            document.querySelector("#last-refreshed").textContent = (new Date).toLocaleTimeString();
+            document.querySelector("#last-refreshed").textContent = (new Date()).toLocaleTimeString();
         }, 1000);
     </script>
 </body>

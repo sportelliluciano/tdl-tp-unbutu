@@ -1,3 +1,4 @@
 #!/bin/bash
 
-ffmpeg -progress - -nostats -i /home/matias/Facultad/TDL/tdl-tp-unbutu/pantaleo.mkv /home/matias/Facultad/TDL/tdl-tp-unbutu/test.aac
+rm -f test.mov
+ffmpeg -progress - -nostats -i pantaleo.mkv test.mov

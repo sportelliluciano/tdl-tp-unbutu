@@ -23,7 +23,7 @@ func (jc *JobController) CreateJob(c *gin.Context) {
 	if err != models.NoError {
 		c.IndentedJSON(http.StatusTooManyRequests, jobId)
 	} else {
-		c.IndentedJSON(http.StatusOK, jobId)
+		c.IndentedJSON(http.StatusCreated, jobId)
 	}
 }
 

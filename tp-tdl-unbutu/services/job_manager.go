@@ -36,7 +36,7 @@ func (jm *JobManager) CreateJob(newJob models.NewJobRequest) (*models.JobId, mod
 }
 
 func (jm *JobManager) spawnJob(newJob models.Job) {
-	jm.jobsRepository.UpdateJobStatus(newJob.JobId, models.StatusRunning)
+	jm.jobsRepository.UpdateJobStatus(newJob.JobId, models.StatusQueued)
 	jm.worker_queue <- newJob
 }
 
@@ -58,6 +58,7 @@ func (jm *JobManager) Run() {
 		case msg := <-jm.input_channel:
 			jm.spawnJob(msg)
 		case msg := <-jm.progress_channel:
+			jm.jobsRepository.UpdateJobStatus(msg.JobId, models.StatusRunning)
 			jm.jobsRepository.UpdateJobProgress(msg.JobId, models.JobProgress(msg.Progress))
 		case msg := <-jm.output_channel:
 			if msg.Output == models.JobFail {
