@@ -14,6 +14,7 @@ const (
 	JobNotFound          = "job_not_found"
 	JobNotFinished       = "job_not_finished"
 	JobFinished          = "job_finished"
+	JobFail              = "job_fail"
 	JobMetadataCorrupted = "job_metadata_corrupted"
 	DatabaseError        = "database_error"
 	QueueFull            = "queue_full"

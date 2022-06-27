@@ -49,9 +49,9 @@ func reportJobProgress(pipeReader io.ReadCloser, progress_channel chan models.Jo
 func waitForJobOutput(cmd *exec.Cmd, output_channel chan models.JobResult, job_id models.JobId) {
 	cmd.Start()
 	err := cmd.Wait()
-	output := "Success"
+	output := models.NoError
 	if err != nil {
-		output = "Error"
+		output = models.JobFail
 	}
 	output_channel <- models.JobResult{JobId: job_id, Output: output}
 }

@@ -60,7 +60,11 @@ func (jm *JobManager) Run() {
 		case msg := <-jm.progress_channel:
 			jm.jobsRepository.UpdateJobProgress(msg.JobId, models.JobProgress(msg.Progress))
 		case msg := <-jm.output_channel:
-			jm.jobsRepository.UpdateJobStatus(msg.JobId, models.StatusFinished)
+			if msg.Output == models.JobFail {
+				jm.jobsRepository.UpdateJobStatus(msg.JobId, models.StatusFailed)
+			} else {
+				jm.jobsRepository.UpdateJobStatus(msg.JobId, models.StatusFinished)
+			}
 			jm.jobsRepository.SaveJobOutput(msg.JobId, models.JobOutput(msg.Output))
 		}
 	}
