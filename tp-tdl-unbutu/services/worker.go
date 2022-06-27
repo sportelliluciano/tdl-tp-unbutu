@@ -2,6 +2,7 @@ package services
 
 import (
 	"tp-tdl-unbutu/tp-tdl-unbutu/models"
+	"tp-tdl-unbutu/tp-tdl-unbutu/repositories"
 )
 
 type Worker struct {
@@ -22,9 +23,10 @@ func (w *Worker) executeJob(newJob models.Job) {
 	spawn(models.NewJob{JobId: newJob.JobId, Format: newJob.Format}, w.output_channel, w.progress_channel)
 }
 
-func (w *Worker) Run() {
+func (w *Worker) Run(jobsRepository *repositories.JobRepository) {
 	for {
 		msg := <-w.input_channel
+		jobsRepository.UpdateJobStatus(msg.JobId, models.StatusRunning)
 		w.executeJob(msg)
 	}
 }
