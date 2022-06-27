@@ -1,7 +1,6 @@
 package services
 
 import (
-	"log"
 	"tp-tdl-unbutu/tp-tdl-unbutu/models"
 	"tp-tdl-unbutu/tp-tdl-unbutu/repositories"
 )
@@ -27,23 +26,18 @@ func NewJobManager(jobsRepository *repositories.JobRepository) *JobManager {
 
 func (jm *JobManager) CreateJob(newJob models.NewJobRequest) (*models.JobId, models.JobError) {
 	// parse newjobrequest into a NewJob struct
-	job, _ := jm.jobsRepository.CreateJob(models.NewJob{})
+	job, _ := jm.jobsRepository.CreateJob(models.NewJob(newJob))
 	select {
 	case jm.input_channel <- *job:
 	default:
 		return nil, models.QueueFull
 	}
-
-	//TODO: chequear si ahy metodo para confirmar encolado
 	return &job.JobId, models.NoError
 }
 
 func (jm *JobManager) spawnJob(newJob models.Job) {
 	jm.jobsRepository.UpdateJobStatus(newJob.JobId, models.StatusRunning)
-	log.Println("agrego job a la cola")
 	jm.worker_queue <- newJob
-	log.Println("nuevo job a agregado")
-	//spawn(models.NewJob{JobId: newJob.JobId}, jm.output_channel, jm.progress_channel)
 }
 
 func (jm *JobManager) FindJob(jobId models.JobId) (*models.Job, models.JobError) {

@@ -6,8 +6,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/google/uuid"
 )
 
 type JobRepository struct {
@@ -19,16 +17,16 @@ func NewJobRepository(collection *mongo.Collection) JobRepository {
 }
 
 func (jr *JobRepository) CreateJob(newJob models.NewJob) (*models.Job, models.JobError) {
-	newId := uuid.New().String()
-	_, err := jr.collection.InsertOne(context.TODO(), serializeNewJobToBson(newId, newJob))
+	_, err := jr.collection.InsertOne(context.TODO(), serializeNewJobToBson(string(newJob.JobId), newJob))
 	if err != nil {
 		return nil, models.DatabaseError
 	}
 	return &models.Job{
-		JobId:    models.JobId(newId),
+		JobId:    models.JobId(newJob.JobId),
 		Progress: models.JobProgress(make(map[string]interface{})),
 		Status:   models.StatusQueued,
 		Output:   models.JobOutput(""),
+		Format:   models.Format(newJob.Format),
 	}, models.NoError
 }
 
@@ -79,6 +77,7 @@ func serializeNewJobToBson(newId string, newJob models.NewJob) bson.D {
 		{Key: "progress", Value: make(map[string]string)},
 		{Key: "status", Value: models.StatusQueued},
 		{Key: "output", Value: ""},
+		{Key: "format", Value: newJob.Format},
 	}
 }
 
@@ -87,12 +86,14 @@ func deserializeJobFromBson(job bson.M) (*models.Job, bool) {
 	progress, ok_1 := job["progress"].(bson.M)
 	status, ok_2 := job["status"].(string)
 	output, ok_3 := job["output"].(string)
+	format, ok_4 := job["format"].(string)
 
-	if !ok_0 || !ok_1 || !ok_2 || !ok_3 {
+	if !ok_0 || !ok_1 || !ok_2 || !ok_3 || !ok_4 {
 		println(ok_0)
 		println(ok_1)
 		println(ok_2)
 		println(ok_3)
+		println(ok_4)
 		return nil, false
 	}
 
@@ -101,5 +102,6 @@ func deserializeJobFromBson(job bson.M) (*models.Job, bool) {
 		Progress: models.JobProgress(progress),
 		Status:   models.JobStatus(status),
 		Output:   models.JobOutput(output),
+		Format:   models.Format(format),
 	}, true
 }

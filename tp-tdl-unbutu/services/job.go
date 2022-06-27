@@ -2,6 +2,7 @@ package services
 
 import (
 	"io"
+	"log"
 	"tp-tdl-unbutu/tp-tdl-unbutu/models"
 
 	"os/exec"
@@ -10,6 +11,12 @@ import (
 )
 
 func spawn(newJob models.NewJob, output_channel chan models.JobResult, progress_channel chan models.JobProgressReport) {
+	inputFile := "/input/" + newJob.JobId
+	outputFile := "/output/" + string(newJob.JobId) + "." + string(newJob.Format)
+
+	log.Println("input: " + inputFile)
+	log.Println("output: " + outputFile)
+
 	dateCmd := exec.Command("bash", "./date-with-sleep.sh")
 	pipeReader, err := dateCmd.StdoutPipe()
 	if err != nil {

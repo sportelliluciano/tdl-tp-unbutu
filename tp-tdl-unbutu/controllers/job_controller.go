@@ -6,6 +6,7 @@ import (
 	"tp-tdl-unbutu/tp-tdl-unbutu/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type JobController struct {
@@ -17,7 +18,8 @@ func NewJobController(manager *services.JobManager) JobController {
 }
 
 func (jc *JobController) CreateJob(c *gin.Context) {
-	jobId, err := jc.manager.CreateJob(models.NewJobRequest{})
+	newId := uuid.New().String()
+	jobId, err := jc.manager.CreateJob(models.NewJobRequest{JobId: models.JobId(newId), Format: models.Format("mp3")})
 	if err != models.NoError {
 		c.IndentedJSON(http.StatusTooManyRequests, jobId)
 	} else {

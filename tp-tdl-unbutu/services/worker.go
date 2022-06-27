@@ -1,7 +1,6 @@
 package services
 
 import (
-	"log"
 	"tp-tdl-unbutu/tp-tdl-unbutu/models"
 )
 
@@ -20,15 +19,12 @@ func NewWorker(result chan models.JobResult, job chan models.Job, progress chan 
 }
 
 func (w *Worker) executeJob(newJob models.Job) {
-	spawn(models.NewJob{JobId: newJob.JobId}, w.output_channel, w.progress_channel)
+	spawn(models.NewJob{JobId: newJob.JobId, Format: newJob.Format}, w.output_channel, w.progress_channel)
 }
 
 func (w *Worker) Run() {
 	for {
-		log.Println("waiting for job")
 		msg := <-w.input_channel
-		log.Println("starting job")
 		w.executeJob(msg)
-		log.Println("job finished")
 	}
 }
