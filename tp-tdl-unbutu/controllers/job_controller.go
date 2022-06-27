@@ -29,17 +29,15 @@ func (jc *JobController) GetJob(c *gin.Context) {
 }
 
 func (jc *JobController) GetFile(c *gin.Context) {
-	_, err := jc.manager.FindJob(models.JobId(c.Param("jobId")))
-	var format string = ".txt"
+	job, err := jc.manager.FindJob(models.JobId(c.Param("jobId")))
 	if err != models.NoError {
 		c.IndentedJSON(http.StatusBadRequest, err)
 	} else {
 		c.Header("Content-Description", "File Transfer")
 		c.Header("Content-Transfer-Encoding", "binary")
-		c.Header("Content-Disposition", "attachment; filename=hola.txt")
+		c.Header("Content-Disposition", "attachment; filename=result."+string(job.Format))
 		c.Header("Content-Type", "application/octet-stream")
-		c.File("./output/" + format)
-		c.IndentedJSON(http.StatusOK, "Download successful ")
+		c.File("./output/" + string(job.JobId) + "." + string(job.Format))
 	}
 }
 
