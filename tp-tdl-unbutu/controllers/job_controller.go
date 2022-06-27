@@ -24,7 +24,7 @@ func (jc *JobController) GetJob(c *gin.Context) {
 	if err != models.NoError {
 		c.IndentedJSON(http.StatusBadRequest, err)
 	} else {
-		c.IndentedJSON(http.StatusCreated, job)
+		c.IndentedJSON(http.StatusOK, job)
 	}
 }
 
@@ -57,7 +57,7 @@ func (jc *JobController) CreateJob(c *gin.Context) {
 				defer src.Close()
 
 				// Destination
-				dst, err := os.Create("./input/" + newId + ".txt")
+				dst, err := os.Create("./input/" + newId)
 				if err == nil {
 					defer dst.Close()
 
