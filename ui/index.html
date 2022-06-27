@@ -252,7 +252,7 @@
                 console.log(job);
                 updateJobRow(jobId, job.status, formatProgress(job.progress), job.output);
 
-                if (job.status == "finished") {
+                if ((job.status === "finished") | (job.status === "failed")) {
                     completedJobs.push(jobId);
                 }
             }
