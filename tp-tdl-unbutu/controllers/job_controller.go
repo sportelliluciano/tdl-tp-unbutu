@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"tp-tdl-unbutu/tp-tdl-unbutu/models"
@@ -47,34 +48,35 @@ func (jc *JobController) CreateJob(c *gin.Context) {
 	if err != models.NoError {
 		c.IndentedJSON(http.StatusTooManyRequests, jobId)
 	} else {
-		// Source
 		file, err := c.FormFile("file")
-		if err == nil {
-			src, err := file.Open()
-			if err == nil {
-				defer src.Close()
-
-				// Destination
-				dst, err := os.Create("./input/" + newId)
-				if err == nil {
-					defer dst.Close()
-
-					// Copy
-					io.Copy(dst, src)
-					c.IndentedJSON(http.StatusCreated, jobId)
-				} else {
-					c.IndentedJSON(http.StatusBadRequest, err)
-				}
-
-			} else {
-				c.IndentedJSON(http.StatusBadRequest, err)
-			}
-
-		} else {
+		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, err)
+			return
 		}
-
+		err = handleFileUpload(file, newId)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, err)
+		} else {
+			c.IndentedJSON(http.StatusCreated, jobId)
+		}
 	}
+}
+func handleFileUpload(file *multipart.FileHeader, newId string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	dst, err := os.Create("./input/" + newId)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (jc *JobController) RegisterRoutes(router *gin.Engine, base string) {
