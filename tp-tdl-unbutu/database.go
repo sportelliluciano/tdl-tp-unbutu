@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,7 +15,15 @@ type DatabaseGuard struct {
 }
 
 func ConnectToMongoDb(uri string) DatabaseGuard {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	opts := options.Client()
+	opts.SetConnectTimeout(1 * time.Second)
+	client, err := mongo.Connect(context.TODO(), opts.ApplyURI(uri))
+	if err != nil {
+		panic(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		panic(err)
 	}
